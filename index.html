@@ -1368,9 +1368,54 @@ try { paiementsCoches = JSON.parse(localStorage.getItem('mlf5_cal')||'{}'); } ca
 function saveCal() { try{localStorage.setItem('mlf5_cal',JSON.stringify(paiementsCoches));}catch(e){} }
 
 function togglePaiement(id) {
-  paiementsCoches[id] = !paiementsCoches[id];
+  const wasDone = paiementsCoches[id];
+  paiementsCoches[id] = !wasDone;
   saveCal();
+
+  // Trouver l'evenement correspondant
+  const events = getEcheances(calAnnee, calMois);
+  const evt = events.find(e => e.id === id);
+
+  if(evt && !evt.projet) {
+    if(!wasDone) {
+      // Coche -- ajouter la depense automatiquement
+      const existe = depenses.findIndex(d => d._calId === id);
+      if(existe === -1) {
+        depenses.push({
+          desc: evt.nom,
+          mnt: evt.montant,
+          cat: 'Remboursement dette',
+          date: evt.jour + '/' + (calMois+1) + '/' + calAnnee,
+          _calId: id
+        });
+        try{localStorage.setItem('mlf5d', JSON.stringify(depenses));}catch(e){}
+      }
+      // Mettre a jour le reste de la dette
+      const dette = D.dettes.find(d => evt.id.startsWith(d.id));
+      if(dette) {
+        dette.reste = Math.max(0, (dette.reste||0) - evt.montant);
+        try{localStorage.setItem('mlf5', JSON.stringify(D));}catch(e){}
+      }
+      showToast('Paye -- ' + evt.montant.toLocaleString('fr-FR') + ' euros deduits');
+    } else {
+      // Decoche -- retirer la depense automatique
+      const idx = depenses.findIndex(d => d._calId === id);
+      if(idx !== -1) {
+        depenses.splice(idx, 1);
+        try{localStorage.setItem('mlf5d', JSON.stringify(depenses));}catch(e){}
+      }
+      // Remettre le montant sur la dette
+      const dette = D.dettes.find(d => evt.id.startsWith(d.id));
+      if(dette) {
+        dette.reste = Math.min(dette.init||0, (dette.reste||0) + evt.montant);
+        try{localStorage.setItem('mlf5', JSON.stringify(D));}catch(e){}
+      }
+      showToast('Paiement annule');
+    }
+  }
+
   renderCal();
+  updateAll();
 }
 
 function renderCal() {

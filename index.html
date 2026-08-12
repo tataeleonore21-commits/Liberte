@@ -2,6 +2,8 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+  <link rel="icon" type="image/jpeg" href="logo.jpg">
+  <link rel="apple-touch-icon" href="logo.jpg">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ma Liberté Financière</title>
 <style>
@@ -260,7 +262,10 @@
 
 <nav>
   <div class="nav-inner">
-    <div class="logo">Ma Liberté <small>Financière</small></div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <img src="logo.jpg" alt="Ma Liberté Financière" style="height:42px;width:42px;object-fit:cover;border-radius:50%;border:1px solid #C9A84C;">
+      <div class="logo">Ma Liberté <small>Financière</small></div>
+    </div>
     <div class="tabs">
       <button class="tab active" onclick="showTab('dashboard',this)">Tableau</button>
       <button class="tab" onclick="showTab('dettes',this)">Dettes</button>

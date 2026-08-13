@@ -74,7 +74,7 @@
 
   /* ── SECTIONS ── */
   .section { display: none; padding: 20px; max-width: 780px; margin: 0 auto; }
-  .section.active { display: block; }
+  .section.active, .graph-section.active, .cal-section.active, .simu-section.active, .ia-section.active { display: block; }
 
   .sec-head { margin: 8px 0 20px; }
   .sec-title {
@@ -259,6 +259,35 @@
 
   .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--or); color: var(--noir); padding: 8px 20px; border-radius: 2px; font-size: 0.75em; letter-spacing: 2px; text-transform: uppercase; z-index: 999; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
   .toast.show { opacity: 1; }
+/* ── REVENUS INATTENDUS ── */
+.rex-banner { background: linear-gradient(135deg,#0A1A0A,#0D0D0D); border:1px solid #3A6A3A; border-radius:6px; padding:22px; margin-bottom:16px; }
+.rex-banner-title { font-family:'Cormorant Garamond',serif; font-size:1.6em; font-weight:700; color:#4CAF50; letter-spacing:1px; margin-bottom:8px; }
+.rex-banner-sub { font-size:0.85em; color:#888; margin-bottom:18px; line-height:1.6; }
+.rex-total-lbl { font-size:0.72em; color:#888; text-transform:uppercase; letter-spacing:2px; text-align:center; margin-bottom:4px; }
+.rex-total { font-family:'Cormorant Garamond',serif; font-size:2.2em; font-weight:700; color:#4CAF50; text-align:center; padding:10px 0 16px; }
+.rex-item { display:flex; justify-content:space-between; align-items:center; padding:13px 16px; background:rgba(76,175,80,0.08); border:1px solid #2A4A2A; border-radius:6px; margin-bottom:8px; }
+.rex-item-left { flex:1; }
+.rex-item-desc { font-size:0.95em; font-weight:500; color:#F0EBE0; margin-bottom:3px; }
+.rex-item-date { font-size:0.75em; color:#888; }
+.rex-item-mnt { font-family:'Cormorant Garamond',serif; font-size:1.5em; font-weight:700; color:#4CAF50; margin-right:14px; }
+.rex-del { background:none; border:none; color:#555; cursor:pointer; font-size:1.1em; transition:color 0.2s; }
+.rex-del:hover { color:#C0392B; }
+
+/* ── GALERIE ── */
+.gal-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:14px; }
+.gal-item { position:relative; aspect-ratio:1; border-radius:6px; overflow:hidden; border:1px solid #2A2A2A; cursor:pointer; transition:border-color 0.2s; }
+.gal-item:hover { border-color:#8A6E2F; }
+.gal-item img { width:100%; height:100%; object-fit:cover; display:block; }
+.gal-del { position:absolute; top:5px; right:5px; background:rgba(0,0,0,0.75); border:none; color:#aaa; width:24px; height:24px; border-radius:50%; cursor:pointer; font-size:0.75em; display:flex; align-items:center; justify-content:center; }
+.gal-del:hover { color:#C0392B; }
+.gal-add { display:flex; flex-direction:column; align-items:center; justify-content:center; aspect-ratio:1; border-radius:6px; border:1px dashed #333; cursor:pointer; transition:border-color 0.2s; }
+.gal-add:hover { border-color:#8A6E2F; }
+.gal-add-icon { font-size:1.8em; color:#666; margin-bottom:6px; }
+.gal-add-txt { font-size:0.65em; color:#666; text-transform:uppercase; letter-spacing:1px; }
+.lightbox { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.94); z-index:500; display:flex; align-items:center; justify-content:center; padding:20px; }
+.lightbox img { max-width:100%; max-height:90vh; border-radius:6px; border:1px solid #8A6E2F; }
+.lb-close { position:absolute; top:18px; right:18px; background:none; border:none; color:#C9A84C; font-size:1.6em; cursor:pointer; }
+
 </style>
 </head>
 <body>
@@ -393,6 +422,18 @@
       Budget vie · 1 500 € &nbsp;|&nbsp; Capacité remboursement · <span id="rv-capa">—</span>
     </div>
   </div>
+
+  <div style="background:linear-gradient(135deg,#0A1A0A,#0D0D0D);border:1px solid #3A6A3A;border-radius:6px;padding:22px;margin-top:14px;">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:1.6em;font-weight:700;color:#4CAF50;letter-spacing:1px;margin-bottom:8px;">Revenus Inattendus</div>
+    <div style="font-size:0.85em;color:#888;margin-bottom:18px;line-height:1.6;">Prime, remboursement, vente, cadeau, héritage...<br>S'ajoute automatiquement au solde du mois en cours.</div>
+    <div style="font-size:0.68em;color:var(--gris-clair);margin-bottom:12px;line-height:1.5;">
+      Prime, remboursement, vente, cadeau... S'ajoute automatiquement au solde du mois.
+    </div>
+    <div class="form-group"><label class="form-label">Source</label><input class="form-input" id="rex-desc" placeholder="Ex : prime, remboursement, vente..."></div>
+    <div class="form-group"><label class="form-label">Montant (€)</label><input class="form-input" type="number" id="rex-mnt" placeholder="0" min="0"></div>
+    <button class="btn" style="border-color:var(--vert);color:var(--vert);" onclick="ajouterRevExcep()">Enregistrer ce revenu</button>
+    <div style="margin-top:12px;" id="rex-liste"></div>
+  </div>
 </div>
 
 <!-- MOTIVATION -->
@@ -411,9 +452,13 @@
   </div>
   <div class="card" style="margin-top:12px;">
     <div class="card-title">📸 Ma Galerie d'Inspiration</div>
-    <div style="font-size:0.68em;color:var(--gris-clair);margin-bottom:10px;line-height:1.5;">
-      Images qui t'inspirent · Max 12 · <span id="galerie-count" style="color:var(--or)">0/12</span>
+    <div style="font-size:0.68em;color:var(--gris-clair);margin-bottom:12px;line-height:1.5;">
+      Images qui t'inspirent · <span id="galerie-count" style="color:var(--or)">0/12 photos</span>
     </div>
+    <label id="galerie-add-btn" style="display:block;width:100%;background:transparent;border:1px solid #C9A84C;border-radius:2px;color:#C9A84C;padding:10px;text-align:center;cursor:pointer;font-size:0.75em;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;transition:all 0.2s;">
+      + Ajouter des photos
+      <input type="file" accept="image/*" multiple style="display:none" onchange="ajouterPhoto(this)">
+    </label>
     <div id="galerie-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;"></div>
   </div>
 
@@ -454,7 +499,13 @@ function charger(){
   try{ const s=localStorage.getItem('mlf5'); D=s?JSON.parse(s):JSON.parse(JSON.stringify(DEFAUT)); const d=localStorage.getItem('mlf5d'); depenses=d?JSON.parse(d):[]; }
   catch(e){ D=JSON.parse(JSON.stringify(DEFAUT)); depenses=[]; }
 }
-function sauver(){ try{localStorage.setItem('mlf5',JSON.stringify(D));}catch(e){} showToast(); updateAll(); }
+function sauver(){
+  try{localStorage.setItem('mlf5',JSON.stringify(D));}catch(e){}
+  try{localStorage.setItem('mlf5d',JSON.stringify(depensesParMois||{}));}catch(e){}
+  try{localStorage.setItem('mlf5_cal',JSON.stringify(paiementsCoches||{}));}catch(e){}
+  showToast();
+  if(typeof updateAll === 'function') updateAll();
+}
 function revNet(){ return (D.salaire||0)+(D.retraite||0)+(D.loyer||0)+(D.alex||0)-(D.charges||0); }
 function totReste(){ return D.dettes.reduce((s,d)=>s+(d.reste||0),0); }
 function totInit(){ return D.dettes.reduce((s,d)=>s+(d.init||0),0); }
@@ -554,6 +605,66 @@ function renderDashProjets(){
   }).join('');
 }
 
+function ajouterRevExcep(){
+  const desc=document.getElementById('rex-desc').value.trim();
+  const mnt=parseFloat(document.getElementById('rex-mnt').value);
+  if(!desc||!mnt||mnt<=0){alert('Remplis la source et le montant.');return;}
+  // Stocker dans les revenus exceptionnels
+  if(!D.revenusExcep) D.revenusExcep=[];
+  const now=new Date();
+  D.revenusExcep.push({
+    desc,mnt,
+    date:now.toLocaleDateString('fr-FR'),
+    moisKey:moisKey(now.getFullYear(),now.getMonth())
+  });
+  // Ajouter aussi dans les dépenses du mois (en négatif = augmente le solde)
+  const key=moisKey(now.getFullYear(),now.getMonth());
+  if(!depensesParMois[key])depensesParMois[key]=[];
+  depensesParMois[key].push({
+    desc:'+ '+desc,
+    mnt:-mnt,
+    cat:'Revenu inattendu',
+    jour:now.getDate(),
+    date:now.toLocaleDateString('fr-FR'),
+    revenu:true
+  });
+  document.getElementById('rex-desc').value='';
+  document.getElementById('rex-mnt').value='';
+  sauver();
+  renderRevExcep();
+  showToast('+ '+mnt.toLocaleString('fr-FR')+' € ajoutés !');
+}
+
+function suppRevExcep(idx){
+  if(!D.revenusExcep)return;
+  const rev=D.revenusExcep[idx];
+  // Retirer aussi des dépenses du mois
+  if(rev){
+    const deps=depensesParMois[rev.moisKey]||[];
+    const i=deps.findIndex(d=>d.revenu&&d.desc==='+ '+rev.desc&&Math.abs(d.mnt)===rev.mnt);
+    if(i!==-1)deps.splice(i,1);
+    if(deps.length===0)delete depensesParMois[rev.moisKey];
+  }
+  D.revenusExcep.splice(idx,1);
+  sauver();
+  renderRevExcep();
+}
+
+function renderRevExcep(){
+  const el=document.getElementById('rex-liste');if(!el)return;
+  const revs=D.revenusExcep||[];
+  if(!revs.length){el.innerHTML='';return;}
+  el.innerHTML='<div style="font-size:0.65em;color:var(--gris-clair);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Revenus enregistrés</div>'+
+  revs.map((r,i)=>`
+    <div class="data-row">
+      <div><div style="color:var(--vert);font-weight:500;">${r.desc}</div><div style="font-size:0.7em;color:var(--gris-clair);">${r.date}</div></div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-family:'Cormorant Garamond',serif;font-size:1.1em;color:var(--vert);">+ ${r.mnt.toLocaleString('fr-FR')} €</span>
+        <button class="dep-del" onclick="suppRevExcep(${i})">✕</button>
+      </div>
+    </div>`).join('');
+}
+
 function ajouterDep(){
   const desc=document.getElementById('dep-desc').value.trim();
   const mnt=parseFloat(document.getElementById('dep-mnt').value);
@@ -564,9 +675,9 @@ function ajouterDep(){
   document.getElementById('dep-desc').value='';
   document.getElementById('dep-mnt').value='';
   showToast('Dépense ajoutée');
-  updateAll();
+  if(typeof updateAll==='function')updateAll();
 }
-function suppDep(i){ depenses.splice(i,1); try{localStorage.setItem('mlf5d',JSON.stringify(depenses));}catch(e){} updateAll(); }
+function suppDep(i){ depenses.splice(i,1); try{localStorage.setItem('mlf5d',JSON.stringify(depenses));}catch(e){} if(typeof updateAll==='function')updateAll(); }
 function renderDep(){
   const el=document.getElementById('dep-liste'); if(!el)return;
   if(!depenses.length){el.innerHTML='<div style="text-align:center;color:var(--gris);font-size:0.8em;padding:16px 0;letter-spacing:1px;">Aucune dépense ce mois</div>';return;}
@@ -576,6 +687,111 @@ function renderDep(){
   </div>`).join('');
 }
 function resetMois(){ if(confirm('Réinitialiser les dépenses du mois ?')){ depenses=[]; try{localStorage.setItem('mlf5d',JSON.stringify(depenses));}catch(e){} updateAll(); } }
+
+// ═══ REVENUS INATTENDUS ═══
+function ajouterRevInattendu() {
+  const desc = document.getElementById('rex-desc').value.trim();
+  const mnt  = parseFloat(document.getElementById('rex-mnt').value);
+  if(!desc || !mnt || mnt <= 0) { alert('Remplis la source et le montant.'); return; }
+  const now = new Date();
+  const key = moisKey(now.getFullYear(), now.getMonth());
+  if(!D.revenusInattendus) D.revenusInattendus = [];
+  D.revenusInattendus.push({ desc, mnt, date: now.toLocaleDateString('fr-FR'), key });
+  if(!depensesParMois[key]) depensesParMois[key] = [];
+  depensesParMois[key].push({ desc, mnt: -mnt, cat: 'Revenu inattendu', date: now.toLocaleDateString('fr-FR'), revenu: true });
+  document.getElementById('rex-desc').value = '';
+  document.getElementById('rex-mnt').value  = '';
+  sauver();
+  showToast('+ ' + mnt.toLocaleString('fr-FR') + ' € ajoutés !');
+}
+function suppRevInattendu(idx) {
+  if(!D.revenusInattendus) return;
+  const rev = D.revenusInattendus[idx]; if(!rev) return;
+  const deps = depensesParMois[rev.key] || [];
+  const i = deps.findIndex(d => d.revenu && d.desc === rev.desc && Math.abs(d.mnt) === rev.mnt);
+  if(i !== -1) { deps.splice(i, 1); if(!deps.length) delete depensesParMois[rev.key]; }
+  D.revenusInattendus.splice(idx, 1);
+  sauver();
+}
+function renderRevInattendus() {
+  const revs = D.revenusInattendus || [];
+  const sec  = document.getElementById('rex-section');
+  const tot  = document.getElementById('rex-total');
+  const list = document.getElementById('rex-liste');
+  if(!sec) return;
+  if(!revs.length) { sec.style.display = 'none'; return; }
+  sec.style.display = 'block';
+  const total = revs.reduce((s,r)=>s+r.mnt,0);
+  if(tot) tot.textContent = total.toLocaleString('fr-FR') + ' €';
+  if(list) list.innerHTML = revs.map((r,i) => `
+    <div class="rex-item">
+      <div class="rex-item-left">
+        <div class="rex-item-desc">${r.desc}</div>
+        <div class="rex-item-date">${r.date}</div>
+      </div>
+      <div style="display:flex;align-items:center;">
+        <div class="rex-item-mnt">+ ${r.mnt.toLocaleString('fr-FR')} €</div>
+        <button class="rex-del" onclick="suppRevInattendu(${i})">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+// ═══ GALERIE ═══
+let galeriePhotos = [];
+function renderGalerie() {
+  const el  = document.getElementById('gal-grid');
+  const cnt = document.getElementById('gal-count');
+  if(!el) return;
+  if(cnt) cnt.textContent = galeriePhotos.length + ' / 12';
+  
+  el.innerHTML = '';
+  
+  galeriePhotos.forEach(function(p, i) {
+    const item = document.createElement('div');
+    item.style.cssText = 'position:relative;aspect-ratio:1;border-radius:6px;overflow:hidden;border:1px solid #2A2A2A;cursor:pointer;transition:border-color 0.2s;';
+    
+    const img = document.createElement('img');
+    img.src = p.src;
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+    img.onclick = function() { ouvrirLightbox(i); };
+    
+    const delBtn = document.createElement('button');
+    delBtn.textContent = '✕';
+    delBtn.style.cssText = 'position:absolute;top:5px;right:5px;background:rgba(0,0,0,0.75);border:none;color:#aaa;width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:0.75em;';
+    delBtn.onclick = function(e) { e.stopPropagation(); supprimerPhoto(i); };
+    
+    item.appendChild(img);
+    item.appendChild(delBtn);
+    el.appendChild(item);
+  });
+  
+  if(galeriePhotos.length < 12) {
+    const addLabel = document.createElement('label');
+    addLabel.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;aspect-ratio:1;border-radius:6px;border:1px dashed #333;cursor:pointer;';
+    addLabel.onmouseover = function() { this.style.borderColor = '#8A6E2F'; };
+    addLabel.onmouseout  = function() { this.style.borderColor = '#333'; };
+    
+    const icon = document.createElement('div');
+    icon.textContent = '+';
+    icon.style.cssText = 'font-size:1.8em;color:#666;margin-bottom:6px;';
+    
+    const txt = document.createElement('div');
+    txt.textContent = 'Ajouter';
+    txt.style.cssText = 'font-size:0.65em;color:#666;text-transform:uppercase;letter-spacing:1px;';
+    
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.multiple = true;
+    fileInput.style.display = 'none';
+    fileInput.onchange = function() { ajouterPhoto(this); };
+    
+    addLabel.appendChild(icon);
+    addLabel.appendChild(txt);
+    addLabel.appendChild(fileInput);
+    el.appendChild(addLabel);
+  }
+}
 
 function updateAll(){
   const rev=revNet(),tot=totReste(),dep=totDep(),solde=rev-dep;
@@ -593,7 +809,9 @@ function updateAll(){
   ['salaire','retraite','loyer','alex','charges'].forEach(k=>{ const e=document.getElementById('rv-'+k); if(e&&!e.closest('.editable')?.querySelector('input'))e.textContent=(D[k]||0).toLocaleString('fr-FR'); });
   const rt=document.getElementById('rv-total'); if(rt)rt.textContent=fmt(rev);
   const rc=document.getElementById('rv-capa'); if(rc)rc.textContent=fmt(Math.max(0,rev-1500));
-  renderDettes(); renderProjets(); renderDashProjets(); renderDep();
+  renderRevInattendus();
+  renderDettes();
+  renderRevExcep(); renderProjets(); renderDashProjets(); renderDep();
   const sv=document.getElementById('solde-val'); if(sv){sv.textContent=fmt(solde);sv.style.color=solde>=0?'var(--or)':'#C0392B';}
   const sb=document.getElementById('solde-base'); if(sb)sb.textContent=fmt(rev);
 }
@@ -615,7 +833,25 @@ let ci=Math.floor(Math.random()*CITS.length);
 function afficherCit(){ const c=CITS[ci]; ['cit-texte','d-cit'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=c.t+(id==='d-cit'?' — '+c.a:'');}); const ca=document.getElementById('cit-auteur');if(ca)ca.textContent='— '+c.a; const af=document.getElementById('affirmation');if(af)af.textContent=AFFS[Math.floor(Math.random()*AFFS.length)]; }
 function nouvelleCit(){ ci=(ci+1)%CITS.length; afficherCit(); }
 
-function showTab(id,btn){ document.querySelectorAll('.section,.simu-section,.ia-section,.cal-section').forEach(s=>s.classList.remove('active')); document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); const el=document.getElementById(id); if(el)el.classList.add('active'); btn.classList.add('active'); updateAll(); }
+function showTab(id, btn) {
+  // Cacher TOUTES les sections quelle que soit leur classe
+  document.querySelectorAll('.section, .graph-section, .cal-section, .simu-section, .ia-section').forEach(function(s) {
+    s.style.display = 'none';
+    s.classList.remove('active');
+  });
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  
+  const el = document.getElementById(id);
+  if(el) {
+    el.style.display = 'block';
+    el.classList.add('active');
+  }
+  if(btn) btn.classList.add('active');
+  
+  if(id === 'graphiques') initGraphiques();
+  if(id === 'calendrier') renderCal();
+  if(typeof updateAll === 'function') updateAll();
+}
 function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg||'Sauvegardé'; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1800); }
 
 charger(); afficherCit(); updateAll();
@@ -1338,31 +1574,31 @@ function getEcheances(annee, mois) {
   // Impôts Marseille : mai-oct 2026
   const marseille_start = 2026*12+4, marseille_end = 2026*12+9;
   if(now >= marseille_start && now <= marseille_end)
-    events.push({nom:'Impôts Marseille', montant:2500, jour:25, id:'marseille_'+now});
+    events.push({nom:'Impôts Marseille', montant:2500, jour:25, id:'marseille_'+now, detteId:'marseille'});
 
   // Jeanne Marie : sept 2026 - jan 2028
   const jm_start = 2026*12+8, jm_end = 2028*12+0;
   if(now >= jm_start && now <= jm_end)
-    events.push({nom:'Jeanne Marie', montant:2900, jour:5, id:'jm_'+now});
+    events.push({nom:'Jeanne Marie', montant:2900, jour:5, id:'jm_'+now, detteId:'jm'});
 
   // Cayenne : nov 2026 - avr 2027
   const cay_start = 2026*12+10, cay_end = 2027*12+3;
   if(now >= cay_start && now <= cay_end)
-    events.push({nom:'Impôts Cayenne', montant:2000, jour:10, id:'cayenne_'+now});
+    events.push({nom:'Impôts Cayenne', montant:2000, jour:10, id:'cayenne_'+now, detteId:'cayenne'});
 
   // Sofinco : mai 2027
   if(annee===2027 && mois===4)
-    events.push({nom:'Sofinco — Solde', montant:2000, jour:15, id:'sofinco_'+now});
+    events.push({nom:'Sofinco — Solde', montant:2000, jour:15, id:'sofinco_'+now, detteId:'sofinco'});
 
   // Caisse d'Épargne : juin-juil 2027
   const ce_start = 2027*12+5, ce_end = 2027*12+6;
   if(now >= ce_start && now <= ce_end)
-    events.push({nom:"Caisse d'Épargne", montant:2500, jour:10, id:'ce_'+now});
+    events.push({nom:"Caisse d'Épargne", montant:2500, jour:10, id:'ce_'+now, detteId:'ce'});
 
   // BNP : août 2027 - juin 2028
   const bnp_start = 2027*12+7, bnp_end = 2028*12+5;
   if(now >= bnp_start && now <= bnp_end)
-    events.push({nom:'BNP', montant:2850, jour:1, id:'bnp_'+now});
+    events.push({nom:'BNP', montant:2850, jour:1, id:'bnp_'+now, detteId:'bnp'});
 
   // Projets
   if(annee===2027 && mois===1)
@@ -1402,7 +1638,7 @@ function togglePaiement(id) {
         try{localStorage.setItem('mlf5d', JSON.stringify(depenses));}catch(e){}
       }
       // Mettre a jour le reste de la dette
-      const dette = D.dettes.find(d => evt.id.startsWith(d.id));
+      const dette = D.dettes.find(d => d.id === evt.detteId);
       if(dette) {
         dette.reste = Math.max(0, (dette.reste||0) - evt.montant);
         try{localStorage.setItem('mlf5', JSON.stringify(D));}catch(e){}
@@ -1416,7 +1652,7 @@ function togglePaiement(id) {
         try{localStorage.setItem('mlf5d', JSON.stringify(depenses));}catch(e){}
       }
       // Remettre le montant sur la dette
-      const dette = D.dettes.find(d => evt.id.startsWith(d.id));
+      const dette = D.dettes.find(d => d.id === evt.detteId);
       if(dette) {
         dette.reste = Math.min(dette.init||0, (dette.reste||0) + evt.montant);
         try{localStorage.setItem('mlf5', JSON.stringify(D));}catch(e){}
@@ -1786,4 +2022,61 @@ function switchGraph(id, btn) {
   btn.classList.add('active');
   if(id==='depenses') updateChartDep();
 }
-</script>
+
+
+function chargerGalerie() {
+  try { galeriePhotos = JSON.parse(localStorage.getItem('mlf7_gal') || '[]'); } catch(e) { galeriePhotos = []; }
+}
+function sauverGalerie() {
+  try { localStorage.setItem('mlf7_gal', JSON.stringify(galeriePhotos)); } catch(e) { showToast('Stockage plein'); }
+  renderGalerie();
+}
+function ajouterPhoto(input) {
+  const files = Array.from(input.files);
+  if(galeriePhotos.length + files.length > 12) { alert('Maximum 12 photos.'); return; }
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX = 600; let w = img.width, h = img.height;
+        if(w > h && w > MAX) { h = Math.round(h*MAX/w); w = MAX; }
+        else if(h > MAX) { w = Math.round(w*MAX/h); h = MAX; }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        galeriePhotos.push({ src: canvas.toDataURL('image/jpeg', 0.78) });
+        sauverGalerie();
+        showToast('Photo ajoutée !');
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+function supprimerPhoto(idx) {
+  if(confirm('Supprimer cette photo ?')) { galeriePhotos.splice(idx, 1); sauverGalerie(); }
+}
+function ouvrirLightbox(idx) {
+  const p = galeriePhotos[idx];
+  if(!p) return;
+  const lb = document.createElement('div');
+  lb.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.94);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;';
+  
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = '✕';
+  closeBtn.style.cssText = 'position:absolute;top:18px;right:18px;background:none;border:none;color:#C9A84C;font-size:1.6em;cursor:pointer;';
+  closeBtn.onclick = function() { lb.remove(); };
+  
+  const imgEl = document.createElement('img');
+  imgEl.src = p.src;
+  imgEl.style.cssText = 'max-width:100%;max-height:90vh;border-radius:6px;border:1px solid #8A6E2F;';
+  
+  lb.appendChild(closeBtn);
+  lb.appendChild(imgEl);
+  lb.addEventListener('click', function(e) { if(e.target === lb) lb.remove(); });
+  document.body.appendChild(lb);
+}
+
+

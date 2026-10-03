@@ -364,10 +364,7 @@ nav{background:var(--card);border-bottom:1px solid var(--ord);position:sticky;to
       <div class="pa-desc">Immobilier sans gestion. Rendement moyen 4-5%/an. Idéal pour compléter tes revenus à la retraite.</div>
       <div class="pa-mnt editable" id="ap-scpi-mnt" onclick="editApMnt('ap-scpi-mnt',this)">—</div>
     </div>
-    <div class="projet-apres">
-      <div class="pa-titre">💛 Héritage pour Kristel</div>
-      <div class="pa-desc">Construire quelque chose de durable pour ta fille.</div>
-      <div class="pa-mnt editable" id="ap-kristel-mnt" onclick="editApMnt('ap-kristel-mnt',this)">—</div>
+    
     </div>
   </div>
 
@@ -379,7 +376,6 @@ nav{background:var(--card);border-bottom:1px solid var(--ord);position:sticky;to
       <span style="color:var(--or)">·</span> Juin 2028 — Ta maison t'appartient pleinement<br>
       <span style="color:var(--or)">·</span> Août 2028 — Croisière 🚢<br>
       <span style="color:var(--or)">·</span> 7 250 € de revenus mensuels libres<br>
-      <span style="color:var(--or)">·</span> Un patrimoine pour Kristel<br>
       <span style="color:var(--or)">·</span> Une femme brillante — et cette lumière, personne ne te l'enlèvera
     </div>
   </div>
@@ -395,7 +391,7 @@ var JF = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
 var DEFAUT = {
   salaire:4680, retraite:1070, loyer:1000, alex:615, charges:300, epargne:13000,
   revenusInattendus:[],
-  apres:{travaux:20000, scpi:30000, kristel:50000},
+  apres:{travaux:20000, scpi:30000},
   dettes:[
     {id:'marseille', nom:'Imp\u00f4ts Marseille', init:15000, reste:15000, mensuel:2500, debut:'Mai 2026',       fin:'Octobre 2026',  phase:'Phase 1'},
     {id:'jm',        nom:'Jeanne Marie',           init:40600, reste:40600, mensuel:2900, debut:'Septembre 2026', fin:'Janvier 2028',  phase:'Parall\u00e8le'},
@@ -436,7 +432,7 @@ function charger(){
   try{
     var s=localStorage.getItem('mlf10'); D=s?JSON.parse(s):JSON.parse(JSON.stringify(DEFAUT));
     if(!D.revenusInattendus) D.revenusInattendus=[];
-    if(!D.apres) D.apres={travaux:20000,scpi:30000,kristel:50000};
+    if(!D.apres) D.apres={travaux:20000,scpi:30000};
     var d=localStorage.getItem('mlf10d'); DM=d?JSON.parse(d):{};
     var c=localStorage.getItem('mlf10c'); PC=c?JSON.parse(c):{};
   } catch(e){ D=JSON.parse(JSON.stringify(DEFAUT)); DM={}; PC={}; }

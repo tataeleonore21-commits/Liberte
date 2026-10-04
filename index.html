@@ -418,7 +418,7 @@ nav{background:var(--card);border-bottom:1px solid var(--ord);position:sticky;to
 // ══════════════════════════════════════════
 // CONSTANTES
 // ══════════════════════════════════════════
-var MF = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Aût','Septembre','Octobre','Novembre','Décembre'];
+var MF = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 var JF = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
 
 var DEFAUT = {
@@ -427,7 +427,7 @@ var DEFAUT = {
   apres:{travaux:20000, scpi:30000},
   dettes:[
     {id:'marseille', nom:'Impôts Marseille', init:15000, reste:15000, mensuel:2500, debut:'Mai 2026',       fin:'Octobre 2026',  phase:'Phase 1'},
-    {id:'jm',        nom:'Jeanne Marie',           init:40600, reste:40600, mensuel:2900, debut:'Septembre 2026', fin:'Janvier 2028',  phase:'Parallèle'},
+    {id:'jm',        nom:'Jeanne Marie',           init:40600, reste:37700, mensuel:2900, debut:'Septembre 2026', fin:'Janvier 2028',  phase:'Parallèle'},
     {id:'bnp',       nom:'BNP',                    init:34000, reste:34000, mensuel:2000, debut:'Janvier 2027',   fin:'Mai 2028',      phase:'Phase 2'},
     {id:'cayenne',   nom:'Impôts Cayenne',   init:12000, reste:12000, mensuel:2000, debut:'Novembre 2026',  fin:'Avril 2027',    phase:'Phase 2'},
     {id:'sofinco',   nom:'Sofinco',                init:2000,  reste:2000,  mensuel:null, debut:'Mai 2027',       fin:'Mai 2027',      phase:'Phase 3'},
@@ -687,7 +687,7 @@ function rRevI(){
 function getEch(annee,mois){
   var ev=[], n=annee*12+mois;
   if(n>=2026*12+4 &&n<=2026*12+9)  ev.push({nom:'Impôts Marseille',montant:2500,jour:25,id:'ms'+n,did:'marseille'});
-  if(n>=2026*12+8 &&n<=2028*12+0)  ev.push({nom:'Jeanne Marie',          montant:2900,jour:25,id:'jm'+n,did:'jm'});
+  if(n>=2026*12+7 &&n<=2028*12+0)  ev.push({nom:'Jeanne Marie',          montant:2900,jour:25,id:'jm'+n,did:'jm'});
   if(n>=2027*12+0 &&n<=2028*12+4)  ev.push({nom:'BNP',                   montant:2000,jour:1, id:'bp'+n,did:'bnp'});
   if(n>=2026*12+10&&n<=2027*12+3)  ev.push({nom:'Impôts Cayenne',  montant:2000,jour:10,id:'cy'+n,did:'cayenne'});
   if(annee===2027&&mois===4)        ev.push({nom:'Sofinco — Solde', montant:2000,jour:15,id:'sf'+n,did:'sofinco'});
@@ -958,7 +958,7 @@ function verifierAlertes(){
   var now=new Date(), j=now.getDate(), m2=now.getMonth(), a2=now.getFullYear(), n=a2*12+m2;
   var al=[];
   if(n>=2026*12+4 &&n<=2026*12+9 &&j>=20) al.push({t:'Impôts Marseille',msg:'2 500 € avant le 25.',u:j>=24});
-  if(n>=2026*12+8 &&n<=2028*12+0 &&j>=20) al.push({t:'Jeanne Marie',          msg:'2 900 € avant le 25.',u:j>=24});
+  if(n>=2026*12+7 &&n<=2028*12+0 &&j>=20) al.push({t:'Jeanne Marie',          msg:'2 900 € avant le 25.',u:j>=24});
   if(n>=2027*12+0 &&n<=2028*12+4 &&j<=2)  al.push({t:'BNP',                   msg:'2 000 € le 1er.',u:true});
   if(n>=2026*12+10&&n<=2027*12+3 &&j<=10) al.push({t:'Impôts Cayenne',  msg:'2 000 € avant le 10.',u:j>=9});
   if(!al.length)return;

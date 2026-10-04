@@ -187,6 +187,7 @@ nav{background:var(--card);border-bottom:1px solid var(--ord);position:sticky;to
       <button class="tab" onclick="showTab('ca',this)">Calendrier</button>
       <button class="tab" onclick="showTab('mm',this)">Mon Mois</button>
       <button class="tab" onclick="showTab('rv',this)">Revenus</button>
+      <button class="tab" onclick="showTab('ep',this)">Épargne</button>
       <button class="tab" onclick="showTab('ap',this)">Après 2028</button>
     </div>
   </div>
@@ -216,7 +217,6 @@ nav{background:var(--card);border-bottom:1px solid var(--ord);position:sticky;to
   </div>
 
   <div class="card"><div class="card-title">Phase active</div><div id="d-phase"></div></div>
-  <div class="card"><div class="card-title">Mes projets</div><div id="d-proj"></div></div>
 
   <div class="card">
     <div class="card-title">Sauvegarde</div>
@@ -329,6 +329,39 @@ nav{background:var(--card);border-bottom:1px solid var(--ord);position:sticky;to
 </div>
 
 <!-- ══ APRÈS 2028 ══ -->
+<!-- ══ ÉPARGNE ══ -->
+<div id="ep" class="section">
+  <div class="sec-head"><div class="sec-title">Mon Épargne</div><div class="sec-sub">Livret A · Objectifs · Suivi mensuel</div></div>
+
+  <!-- Livret A -->
+  <div class="banner">
+    <div style="font-size:0.82em;color:var(--grisc);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">Livret A · Solde actuel</div>
+    <div class="banner-pct" style="color:var(--vert)" id="ep-livret">—</div>
+    <div style="font-size:0.84em;color:var(--grisc);margin-top:10px;">Cliquer pour mettre à jour</div>
+    <button class="btn" style="margin-top:14px;max-width:280px;" onclick="editLivret()">Mettre à jour le solde</button>
+  </div>
+
+  <!-- Ajouter un versement -->
+  <div class="card">
+    <div class="card-title">Nouveau versement</div>
+    <div class="fg"><label class="fl">Montant versé (€)</label><input class="fi" type="number" id="ep-mnt" placeholder="500" min="0"></div>
+    <div class="fg"><label class="fl">Note (optionnel)</label><input class="fi" id="ep-note" placeholder="Ex : épargne octobre..."></div>
+    <button class="btn v" onclick="ajouterEpargne()">+ Enregistrer ce versement</button>
+  </div>
+
+  <!-- Objectifs -->
+  <div class="card">
+    <div class="card-title">Mes objectifs</div>
+    <div id="ep-objectifs"></div>
+  </div>
+
+  <!-- Historique versements -->
+  <div id="ep-hist-sec" style="display:none;">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:1.05em;color:var(--or);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">Historique des versements</div>
+    <div id="ep-hist"></div>
+  </div>
+</div>
+
 <div id="ap" class="section">
   <div class="sec-head"><div class="sec-title">Après 2028</div><div class="sec-sub">Ta vie après la liberté · Construire ton patrimoine</div></div>
 
@@ -385,7 +418,7 @@ nav{background:var(--card);border-bottom:1px solid var(--ord);position:sticky;to
 // ══════════════════════════════════════════
 // CONSTANTES
 // ══════════════════════════════════════════
-var MF = ['Janvier','F\u00e9vrier','Mars','Avril','Mai','Juin','Juillet','A\u00fbt','Septembre','Octobre','Novembre','D\u00e9cembre'];
+var MF = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Aût','Septembre','Octobre','Novembre','Décembre'];
 var JF = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
 
 var DEFAUT = {
@@ -393,16 +426,12 @@ var DEFAUT = {
   revenusInattendus:[],
   apres:{travaux:20000, scpi:30000},
   dettes:[
-    {id:'marseille', nom:'Imp\u00f4ts Marseille', init:15000, reste:15000, mensuel:2500, debut:'Mai 2026',       fin:'Octobre 2026',  phase:'Phase 1'},
-    {id:'jm',        nom:'Jeanne Marie',           init:40600, reste:40600, mensuel:2900, debut:'Septembre 2026', fin:'Janvier 2028',  phase:'Parall\u00e8le'},
+    {id:'marseille', nom:'Impôts Marseille', init:15000, reste:15000, mensuel:2500, debut:'Mai 2026',       fin:'Octobre 2026',  phase:'Phase 1'},
+    {id:'jm',        nom:'Jeanne Marie',           init:40600, reste:40600, mensuel:2900, debut:'Septembre 2026', fin:'Janvier 2028',  phase:'Parallèle'},
     {id:'bnp',       nom:'BNP',                    init:34000, reste:34000, mensuel:2000, debut:'Janvier 2027',   fin:'Mai 2028',      phase:'Phase 2'},
-    {id:'cayenne',   nom:'Imp\u00f4ts Cayenne',   init:12000, reste:12000, mensuel:2000, debut:'Novembre 2026',  fin:'Avril 2027',    phase:'Phase 2'},
+    {id:'cayenne',   nom:'Impôts Cayenne',   init:12000, reste:12000, mensuel:2000, debut:'Novembre 2026',  fin:'Avril 2027',    phase:'Phase 2'},
     {id:'sofinco',   nom:'Sofinco',                init:2000,  reste:2000,  mensuel:null, debut:'Mai 2027',       fin:'Mai 2027',      phase:'Phase 3'},
-    {id:'ce',        nom:"Caisse d'\u00c9pargne", init:5000,  reste:5000,  mensuel:2500, debut:'Juin 2027',      fin:'Juillet 2027',  phase:'Phase 3'}
-  ],
-  projets:[
-    {id:'senegal',   nom:'Voyage au S\u00e9n\u00e9gal', montant:4000,  ep:0, date:'F\u00e9vrier 2027', mr:7},
-    {id:'croisiere', nom:'Croisi\u00e8re',                montant:34000, ep:0, date:'A\u00fbt 2028',     mr:24}
+    {id:'ce',        nom:"Caisse d'Épargne", init:5000,  reste:5000,  mensuel:2500, debut:'Juin 2027',      fin:'Juillet 2027',  phase:'Phase 3'}
   ]
 };
 
@@ -417,13 +446,13 @@ var cA = new Date().getFullYear(), cM = new Date().getMonth();
 // UTILITAIRES
 // ══════════════════════════════════════════
 function mk(a,m){ return a+'-'+String(m+1).padStart(2,'0'); }
-function fmt(n){ return Math.round(n).toLocaleString('fr-FR')+' \u20ac'; }
+function fmt(n){ return Math.round(n).toLocaleString('fr-FR')+' €'; }
 function pct(r,i){ return i>0?Math.max(0,Math.min(100,Math.round((1-r/i)*100))):100; }
 function rn(){ return (D.salaire||0)+(D.retraite||0)+(D.loyer||0)+(D.alex||0)-(D.charges||0); }
 function tr(){ return D.dettes.reduce(function(s,d){ return s+(d.reste||0); },0); }
 function ti(){ return D.dettes.reduce(function(s,d){ return s+(d.init||0); },0); }
 function el(id){ return document.getElementById(id); }
-function toast(msg){ var t=el('toast'); if(!t)return; t.textContent=msg||'Sauvegard\u00e9'; t.classList.add('on'); setTimeout(function(){ t.classList.remove('on'); },2200); }
+function toast(msg){ var t=el('toast'); if(!t)return; t.textContent=msg||'Sauvegardé'; t.classList.add('on'); setTimeout(function(){ t.classList.remove('on'); },2200); }
 
 // ══════════════════════════════════════════
 // STOCKAGE
@@ -432,6 +461,8 @@ function charger(){
   try{
     var s=localStorage.getItem('mlf10'); D=s?JSON.parse(s):JSON.parse(JSON.stringify(DEFAUT));
     if(!D.revenusInattendus) D.revenusInattendus=[];
+    if(!D.epargneHistorique) D.epargneHistorique=[];
+    if(!D.objectifs) D.objectifs=DEFAUT.objectifs;
     if(!D.apres) D.apres={travaux:20000,scpi:30000};
     var d=localStorage.getItem('mlf10d'); DM=d?JSON.parse(d):{};
     var c=localStorage.getItem('mlf10c'); PC=c?JSON.parse(c):{};
@@ -441,7 +472,7 @@ function sauver(){
   try{ localStorage.setItem('mlf10',JSON.stringify(D)); }catch(e){}
   try{ localStorage.setItem('mlf10d',JSON.stringify(DM)); }catch(e){}
   try{ localStorage.setItem('mlf10c',JSON.stringify(PC)); }catch(e){}
-  toast('Sauvegard\u00e9');
+  toast('Sauvegardé');
   updateAll();
 }
 
@@ -503,16 +534,16 @@ function rDettes(){
   D.dettes.forEach(function(d,i){
     var s=(d.reste||0)<=0, p=pct(d.reste||0,d.init||1);
     h+='<div class="bloc'+(s?' soldee':'')+'"><div class="bloc-header">';
-    h+='<div class="bloc-nom">'+d.nom+(s?' <span class="badge v">Sold\u00e9</span>':'')+'</div>';
+    h+='<div class="bloc-nom">'+d.nom+(s?' <span class="badge v">Soldé</span>':'')+'</div>';
     h+='<div class="bloc-phase">'+d.phase+'</div></div>';
     h+='<div class="bloc-grid">';
     h+='<div class="bi"><div class="l">Initial</div><div class="v r">'+fmt(d.init||0)+'</div></div>';
     h+='<div class="bi"><div class="l">Il reste</div><div class="v editable" onclick="editDNum('+i+',\'reste\',this)">'+fmt(d.reste||0)+'</div></div>';
-    h+='<div class="bi"><div class="l">Mensualit\u00e9</div><div class="v">'+(d.mensuel?fmt(d.mensuel)+'/mois':'Solde unique')+'</div></div>';
+    h+='<div class="bi"><div class="l">Mensualité</div><div class="v">'+(d.mensuel?fmt(d.mensuel)+'/mois':'Solde unique')+'</div></div>';
     h+='</div><div class="bloc-dates">';
-    h+='<div class="bl"><div class="l">D\u00e9but</div><div class="v editable" onclick="editDTxt('+i+',\'debut\',this)">'+(d.debut||'\u2014')+'</div></div>';
-    h+='<div class="bl"><div class="l">Fin</div><div class="v editable" onclick="editDTxt('+i+',\'fin\',this)">'+(d.fin||'\u2014')+'</div></div>';
-    h+='</div><div class="prog-row"><span>Rembours\u00e9</span><span>'+p+'%</span></div>';
+    h+='<div class="bl"><div class="l">Début</div><div class="v editable" onclick="editDTxt('+i+',\'debut\',this)">'+(d.debut||'—')+'</div></div>';
+    h+='<div class="bl"><div class="l">Fin</div><div class="v editable" onclick="editDTxt('+i+',\'fin\',this)">'+(d.fin||'—')+'</div></div>';
+    h+='</div><div class="prog-row"><span>Remboursé</span><span>'+p+'%</span></div>';
     h+='<div class="prog-track"><div class="prog-fill'+(s?' v':'')+'" style="width:'+p+'%"></div></div></div>';
   });
   e.innerHTML=h;
@@ -555,17 +586,17 @@ function suppDep(key,i){
 }
 
 function resetMois(){
-  if(confirm('R\u00e9initialiser '+MF[vM]+' '+vA+' ?')){ delete DM[mk(vA,vM)]; sauver(); }
+  if(confirm('Réinitialiser '+MF[vM]+' '+vA+' ?')){ delete DM[mk(vA,vM)]; sauver(); }
 }
 
 function rDep(){
   var key=mk(vA,vM), deps=DM[key]||[];
   var isCur=(vA===new Date().getFullYear()&&vM===new Date().getMonth());
   var tEl=el('mm-tit'); if(tEl) tEl.textContent=MF[vM]+' '+vA;
-  var sEl=el('mm-sub'); if(sEl) sEl.textContent=isCur?"Saisie au fil de l'eau":"Consultation \u2014 mois pass\u00e9";
+  var sEl=el('mm-sub'); if(sEl) sEl.textContent=isCur?"Saisie au fil de l'eau":"Consultation — mois passé";
   var e=el('dep-liste'); if(!e)return;
   if(!deps.length){
-    e.innerHTML='<div style="text-align:center;color:var(--gris);font-size:.88em;padding:20px 0;">Aucune d\u00e9pense ce mois</div>';
+    e.innerHTML='<div style="text-align:center;color:var(--gris);font-size:.88em;padding:20px 0;">Aucune dépense ce mois</div>';
   } else {
     var h='';
     deps.forEach(function(d,i){
@@ -573,10 +604,10 @@ function rDep(){
       var badge=d._calId?'<span class="badge v" style="margin-left:7px;">auto</span>':'';
       h+='<div class="di"><div>';
       h+='<div style="font-weight:500;color:'+(isR?'var(--vert)':'var(--blanc)')+'">'+d.desc+badge+'</div>';
-      h+='<div style="color:var(--gris);font-size:.78em;margin-top:3px;">'+d.cat+' \u00b7 '+d.date+'</div></div>';
+      h+='<div style="color:var(--gris);font-size:.78em;margin-top:3px;">'+d.cat+' · '+d.date+'</div></div>';
       h+='<div style="display:flex;align-items:center;gap:12px;">';
-      h+='<span style="font-size:1.15em;color:'+(isR?'var(--vert)':'var(--blanc)')+'">'+( isR?'+ '+Math.abs(d.mnt).toFixed(2):'\u2212 '+d.mnt.toFixed(2))+' \u20ac</span>';
-      h+='<button class="dd" onclick="suppDep(\''+key+'\','+i+')">\u2715</button></div></div>';
+      h+='<span style="font-size:1.15em;color:'+(isR?'var(--vert)':'var(--blanc)')+'">'+( isR?'+ '+Math.abs(d.mnt).toFixed(2):'− '+d.mnt.toFixed(2))+' €</span>';
+      h+='<button class="dd" onclick="suppDep(\''+key+'\','+i+')">✕</button></div></div>';
     });
     e.innerHTML=h;
   }
@@ -586,9 +617,9 @@ function rDep(){
   var echM=deps.filter(function(d){ return d._calId; }).reduce(function(s,d){ return s+d.mnt; },0);
   var sol=rev+revM-totD;
   var sv=el('sol-val'); if(sv){ sv.textContent=fmt(sol); sv.style.color=sol>=0?'var(--or)':'var(--rouge)'; }
-  var sd=el('sol-det'); if(sd) sd.innerHTML='Revenus fixes \u00b7 '+fmt(rev)+
-    (revM>0?'<br>Revenus inattendus \u00b7 <span style="color:var(--vert)">+ '+fmt(revM)+'</span>':'')+
-    '<br>Remboursements \u00b7 '+fmt(echM)+'<br>D\u00e9penses courantes \u00b7 '+fmt(Math.max(0,totD-echM));
+  var sd=el('sol-det'); if(sd) sd.innerHTML='Revenus fixes · '+fmt(rev)+
+    (revM>0?'<br>Revenus inattendus · <span style="color:var(--vert)">+ '+fmt(revM)+'</span>':'')+
+    '<br>Remboursements · '+fmt(echM)+'<br>Dépenses courantes · '+fmt(Math.max(0,totD-echM));
   var hEl=el('mm-hist');
   if(hEl){
     var keys=Object.keys(DM).sort().reverse().slice(0,6);
@@ -610,11 +641,13 @@ function ajouterRevI(){
   if(!desc||!mnt||mnt<=0){ alert('Remplis la source et le montant.'); return; }
   var now=new Date(), key=mk(now.getFullYear(),now.getMonth());
   if(!D.revenusInattendus) D.revenusInattendus=[];
+    if(!D.epargneHistorique) D.epargneHistorique=[];
+    if(!D.objectifs) D.objectifs=DEFAUT.objectifs;
   D.revenusInattendus.push({desc:desc,mnt:mnt,date:now.toLocaleDateString('fr-FR'),key:key});
   if(!DM[key])DM[key]=[];
   DM[key].push({desc:desc,mnt:-mnt,cat:'Revenu inattendu',date:now.toLocaleDateString('fr-FR'),revenu:true});
   el('rx-desc').value=''; el('rx-mnt').value='';
-  sauver(); toast('+ '+mnt.toLocaleString('fr-FR')+' \u20ac ajout\u00e9s !');
+  sauver(); toast('+ '+mnt.toLocaleString('fr-FR')+' € ajoutés !');
 }
 
 function suppRevI(idx){
@@ -632,7 +665,7 @@ function rRevI(){
   if(!revs.length){ sec.style.display='none'; return; }
   sec.style.display='block';
   var tot=revs.reduce(function(s,r){ return s+r.mnt; },0);
-  var tEl=el('rx-tot'); if(tEl) tEl.textContent=tot.toLocaleString('fr-FR')+' \u20ac';
+  var tEl=el('rx-tot'); if(tEl) tEl.textContent=tot.toLocaleString('fr-FR')+' €';
   var lEl=el('rx-liste');
   if(lEl){
     var h='';
@@ -641,8 +674,8 @@ function rRevI(){
       h+='<div style="font-size:.95em;font-weight:500;color:var(--blanc);">'+r.desc+'</div>';
       h+='<div style="font-size:.78em;color:#888;">'+r.date+'</div></div>';
       h+='<div style="display:flex;align-items:center;">';
-      h+='<div style="font-size:1.5em;font-weight:700;color:var(--vert);margin-right:14px;">+ '+r.mnt.toLocaleString('fr-FR')+' \u20ac</div>';
-      h+='<button class="rd" onclick="suppRevI('+i+')">\u2715</button></div></div>';
+      h+='<div style="font-size:1.5em;font-weight:700;color:var(--vert);margin-right:14px;">+ '+r.mnt.toLocaleString('fr-FR')+' €</div>';
+      h+='<button class="rd" onclick="suppRevI('+i+')">✕</button></div></div>';
     });
     lEl.innerHTML=h;
   }
@@ -653,14 +686,14 @@ function rRevI(){
 // ══════════════════════════════════════════
 function getEch(annee,mois){
   var ev=[], n=annee*12+mois;
-  if(n>=2026*12+4 &&n<=2026*12+9)  ev.push({nom:'Imp\u00f4ts Marseille',montant:2500,jour:25,id:'ms'+n,did:'marseille'});
+  if(n>=2026*12+4 &&n<=2026*12+9)  ev.push({nom:'Impôts Marseille',montant:2500,jour:25,id:'ms'+n,did:'marseille'});
   if(n>=2026*12+8 &&n<=2028*12+0)  ev.push({nom:'Jeanne Marie',          montant:2900,jour:25,id:'jm'+n,did:'jm'});
   if(n>=2027*12+0 &&n<=2028*12+4)  ev.push({nom:'BNP',                   montant:2000,jour:1, id:'bp'+n,did:'bnp'});
-  if(n>=2026*12+10&&n<=2027*12+3)  ev.push({nom:'Imp\u00f4ts Cayenne',  montant:2000,jour:10,id:'cy'+n,did:'cayenne'});
-  if(annee===2027&&mois===4)        ev.push({nom:'Sofinco \u2014 Solde', montant:2000,jour:15,id:'sf'+n,did:'sofinco'});
-  if(n>=2027*12+5 &&n<=2027*12+6)  ev.push({nom:"Caisse d'\u00c9pargne",montant:2500,jour:10,id:'ce'+n,did:'ce'});
-  if(annee===2027&&mois===1)        ev.push({nom:'S\u00e9n\u00e9gal \u2708',montant:4000,jour:1,id:'sn',projet:true});
-  if(annee===2028&&mois===7)        ev.push({nom:'Croisi\u00e8re \ud83d\udea2',montant:34000,jour:1,id:'cr',projet:true});
+  if(n>=2026*12+10&&n<=2027*12+3)  ev.push({nom:'Impôts Cayenne',  montant:2000,jour:10,id:'cy'+n,did:'cayenne'});
+  if(annee===2027&&mois===4)        ev.push({nom:'Sofinco — Solde', montant:2000,jour:15,id:'sf'+n,did:'sofinco'});
+  if(n>=2027*12+5 &&n<=2027*12+6)  ev.push({nom:"Caisse d'Épargne",montant:2500,jour:10,id:'ce'+n,did:'ce'});
+  if(annee===2027&&mois===1)        ev.push({nom:'Sénégal ✈',montant:4000,jour:1,id:'sn',projet:true});
+  if(annee===2028&&mois===7)        ev.push({nom:'Croisière 🚢',montant:34000,jour:1,id:'cr',projet:true});
   return ev;
 }
 
@@ -675,13 +708,13 @@ function togglePay(id){
         DM[key].push({desc:evt.nom,mnt:evt.montant,cat:'Remboursement dette',date:evt.jour+'/'+(cM+1)+'/'+cA,_calId:id});
       var dt=D.dettes.find(function(d){ return d.id===evt.did; });
       if(dt) dt.reste=Math.max(0,(dt.reste||0)-evt.montant);
-      toast('\u2713 '+evt.montant.toLocaleString('fr-FR')+' \u20ac d\u00e9duits');
+      toast('✓ '+evt.montant.toLocaleString('fr-FR')+' € déduits');
     } else {
       var idx2=DM[key].findIndex(function(d){ return d._calId===id; });
       if(idx2!==-1){ DM[key].splice(idx2,1); if(!DM[key].length) delete DM[key]; }
       var dt2=D.dettes.find(function(d){ return d.id===evt.did; });
       if(dt2) dt2.reste=Math.min(dt2.init||0,(dt2.reste||0)+evt.montant);
-      toast('Paiement annul\u00e9');
+      toast('Paiement annulé');
     }
   }
   sauver(); rCal();
@@ -703,7 +736,7 @@ function rCal(){
     var allP=evJ.length>0&&evJ.every(function(e){ return PC[e.id]; });
     var cls='cal-day'+(isT?' td':'')+(allP?' py':'');
     var dots=evJ.map(function(e){ return '<div class="dot'+(e.projet?' v':'')+'"></div>'; }).join('');
-    h+='<div class="'+cls+'"><div class="cal-day-num">'+d+'</div>'+dots+(allP?'<div class="cal-ck">\u2713</div>':'')+'</div>';
+    h+='<div class="'+cls+'"><div class="cal-day-num">'+d+'</div>'+dots+(allP?'<div class="cal-ck">✓</div>':'')+'</div>';
   }
   gEl.innerHTML=h;
   var totM=evts.filter(function(e){ return !e.projet; }).reduce(function(s,e){ return s+e.montant; },0);
@@ -712,16 +745,16 @@ function rCal(){
   var e2=el('ca-pay'); if(e2) e2.textContent=fmt(payM);
   var e3=el('ca-rst'); if(e3) e3.textContent=fmt(Math.max(0,totM-payM));
   if(!evts.length){
-    eEl.innerHTML='<div style="text-align:center;color:var(--gris);font-size:.88em;padding:18px 0;">Aucune \u00e9ch\u00e9ance ce mois</div>';
+    eEl.innerHTML='<div style="text-align:center;color:var(--gris);font-size:.88em;padding:18px 0;">Aucune échéance ce mois</div>';
   } else {
     var eh='';
     evts.forEach(function(e){
       var done=!!PC[e.id];
       eh+='<div class="evt" style="'+(done?'opacity:.6':'')+'"><div>';
-      eh+='<div class="evt-nom" style="'+(done?'text-decoration:line-through;color:var(--grisc)':'')+'">'+e.nom+(done?' <span style="color:var(--vert)">\u2713</span>':'')+'</div>';
+      eh+='<div class="evt-nom" style="'+(done?'text-decoration:line-through;color:var(--grisc)':'')+'">'+e.nom+(done?' <span style="color:var(--vert)">✓</span>':'')+'</div>';
       eh+='<div class="evt-date">Le '+e.jour+' '+MF[cM]+' '+cA+'</div></div>';
-      eh+='<div style="display:flex;align-items:center;"><div class="evt-mnt">'+e.montant.toLocaleString('fr-FR')+' \u20ac</div>';
-      if(!e.projet) eh+='<button class="cb '+(done?'ok':'')+'" onclick="togglePay(\''+ e.id +'\')">'+( done?'\u2713':'\u25cb')+'</button>';
+      eh+='<div style="display:flex;align-items:center;"><div class="evt-mnt">'+e.montant.toLocaleString('fr-FR')+' €</div>';
+      if(!e.projet) eh+='<button class="cb '+(done?'ok':'')+'" onclick="togglePay(\''+ e.id +'\')">'+( done?'✓':'○')+'</button>';
       eh+='</div></div>';
     });
     eEl.innerHTML=eh;
@@ -757,6 +790,87 @@ function rApres(){
 // ══════════════════════════════════════════
 // UPDATE ALL
 // ══════════════════════════════════════════
+
+// ══════════════════════════════════════════
+// ÉPARGNE
+// ══════════════════════════════════════════
+function editLivret(){
+  var val = prompt('Nouveau solde du Livret A (€) :', D.epargne||0);
+  if(val !== null){
+    var n = parseFloat(val);
+    if(!isNaN(n) && n >= 0){ D.epargne = n; sauver(); toast('Livret A mis à jour !'); }
+  }
+}
+
+function ajouterEpargne(){
+  var mnt  = parseFloat(el('ep-mnt').value);
+  var note = el('ep-note').value.trim() || 'Versement';
+  if(!mnt || mnt <= 0){ alert('Indique un montant.'); return; }
+  if(!D.epargneHistorique) D.epargneHistorique = [];
+  D.epargneHistorique.push({mnt:mnt, note:note, date:new Date().toLocaleDateString('fr-FR')});
+  D.epargne = (D.epargne||0) + mnt;
+  var reste = mnt;
+  if(D.objectifs) D.objectifs.forEach(function(obj){
+    if(reste <= 0) return;
+    var manque = Math.max(0, obj.montant - (obj.cumul||0));
+    var apport = Math.min(reste, manque);
+    obj.cumul = (obj.cumul||0) + apport;
+    reste -= apport;
+  });
+  el('ep-mnt').value = ''; el('ep-note').value = '';
+  sauver(); toast('+ '+mnt.toLocaleString('fr-FR')+' € ajoutés !');
+}
+
+function suppEpargne(idx){
+  if(!D.epargneHistorique) return;
+  var v = D.epargneHistorique[idx]; if(!v) return;
+  if(confirm('Supprimer ce versement de '+v.mnt.toLocaleString('fr-FR')+' € ?')){
+    D.epargne = Math.max(0,(D.epargne||0)-v.mnt);
+    D.epargneHistorique.splice(idx,1);
+    sauver();
+  }
+}
+
+function rEpargne(){
+  var lEl = el('ep-livret');
+  if(lEl) lEl.textContent = fmt(D.epargne||0);
+  var oEl = el('ep-objectifs');
+  if(oEl && D.objectifs){
+    var h = '';
+    D.objectifs.forEach(function(obj){
+      var p2 = Math.min(100,Math.round(((obj.cumul||0)/obj.montant)*100));
+      var manque = Math.max(0,obj.montant-(obj.cumul||0));
+      h += '<div style="margin-bottom:18px;">';
+      h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">';
+      h += '<div><div style="font-size:.95em;font-weight:500;color:var(--blanc);">'+obj.nom+'</div>';
+      h += '<div style="font-size:.75em;color:var(--grisc);margin-top:2px;">'+obj.date+'</div></div>';
+      h += '<div style="text-align:right;">';
+      h += '<div style="font-size:1.2em;font-weight:700;color:'+(manque>0?'var(--or)':'var(--vert)')+';">'+(manque>0?fmt(obj.cumul||0)+' / '+fmt(obj.montant):'Atteint ✓')+'</div>';
+      if(manque>0) h += '<div style="font-size:.75em;color:var(--grisc);">Il manque '+fmt(manque)+'</div>';
+      h += '</div></div>';
+      h += '<div class="prog-row"><span>Progression</span><span>'+p2+'%</span></div>';
+      h += '<div class="prog-track"><div class="prog-fill'+(p2>=100?' v':'')+'" style="width:'+p2+'%"></div></div></div>';
+    });
+    oEl.innerHTML = h;
+  }
+  var hist = D.epargneHistorique||[];
+  var sec = el('ep-hist-sec'); if(sec) sec.style.display = hist.length?'block':'none';
+  var hEl = el('ep-hist');
+  if(hEl){
+    var h2 = '';
+    hist.slice().reverse().forEach(function(v,ri){
+      var i2 = hist.length-1-ri;
+      h2 += '<div class="hi"><div>';
+      h2 += '<div style="font-weight:500;color:var(--blanc);">'+v.note+'</div>';
+      h2 += '<div style="font-size:.75em;color:var(--grisc);margin-top:2px;">'+v.date+'</div></div>';
+      h2 += '<div style="display:flex;align-items:center;gap:12px;">';
+      h2 += '<span style="color:var(--vert);font-size:1.1em;font-weight:600;">+ '+v.mnt.toLocaleString('fr-FR')+' €</span>';
+      h2 += '<button class="dd" onclick="suppEpargne('+i2+')">✕</button></div></div>';
+    });
+    hEl.innerHTML = h2;
+  }
+}
+
 function updateAll(){
   var rev=rn(), tot=tr();
   var deps=DM[mk(vA,vM)]||[];
@@ -780,20 +894,15 @@ function updateAll(){
     if(act){
       var p2=pct(act.reste||0,act.init||1);
       ph.innerHTML='<div style="font-size:1.1em;color:var(--blanc);margin-bottom:6px;">'+act.nom+'</div>'+
-        '<div style="font-size:.8em;color:var(--grisc);margin-bottom:12px;">'+act.debut+' \u2192 '+act.fin+'</div>'+
-        '<div class="prog-row"><span>Rembours\u00e9</span><span>'+p2+'%</span></div>'+
+        '<div style="font-size:.8em;color:var(--grisc);margin-bottom:12px;">'+act.debut+' → '+act.fin+'</div>'+
+        '<div class="prog-row"><span>Remboursé</span><span>'+p2+'%</span></div>'+
         '<div class="prog-track"><div class="prog-fill" style="width:'+p2+'%"></div></div>';
     } else {
-      ph.innerHTML='<span style="color:var(--vert);font-size:1.15em;">\ud83c\udf89 Toutes dettes sold\u00e9es !</span>';
+      ph.innerHTML='<span style="color:var(--vert);font-size:1.15em;">🎉 Toutes dettes soldées !</span>';
     }
   }
 
-  var dp=el('d-proj');
-  if(dp) dp.innerHTML=D.projets.map(function(p){
-    var m2=Math.max(0,(p.montant||0)-(p.ep||0));
-    return '<div class="data-row"><span class="data-lbl">'+p.nom+' <span style="font-size:.82em;color:var(--gris)">('+p.date+')</span></span>'+
-      '<span class="data-val '+(m2>0?'r':'v')+'">'+(m2>0?'\u2212 '+fmt(m2):'Couvert \u2713')+'</span></div>';
-  }).join('');
+
 
   var kmap={salaire:'rv-sal',retraite:'rv-ret',loyer:'rv-loy',alex:'rv-alx',charges:'rv-chg'};
   Object.keys(kmap).forEach(function(k){
@@ -802,7 +911,7 @@ function updateAll(){
   e=el('rv-tot'); if(e) e.textContent=fmt(rev);
   e=el('rv-cap'); if(e) e.textContent=fmt(Math.max(0,rev-1500));
 
-  rRevI(); rDettes(); rDep(); rCal(); rApres();
+  rRevI(); rDettes(); rDep(); rCal(); rApres(); rEpargne();
 }
 
 // ══════════════════════════════════════════
@@ -825,7 +934,7 @@ function exportData(){
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');
   a.href=url; a.download='mlf-'+new Date().toLocaleDateString('fr-FR').replace(/\//g,'-')+'.json';
-  a.click(); URL.revokeObjectURL(url); toast('Export\u00e9 !');
+  a.click(); URL.revokeObjectURL(url); toast('Exporté !');
 }
 function importData(input){
   var file=input.files[0]; if(!file)return;
@@ -836,7 +945,7 @@ function importData(input){
       if(p.data) D=p.data;
       if(p.dep||p.depenses) DM=p.dep||p.depenses;
       if(p.cal) PC=p.cal;
-      sauver(); toast('Import\u00e9 !');
+      sauver(); toast('Importé !');
     } catch(err){ alert('Fichier invalide.'); }
   };
   reader.readAsText(file);
@@ -848,19 +957,19 @@ function importData(input){
 function verifierAlertes(){
   var now=new Date(), j=now.getDate(), m2=now.getMonth(), a2=now.getFullYear(), n=a2*12+m2;
   var al=[];
-  if(n>=2026*12+4 &&n<=2026*12+9 &&j>=20) al.push({t:'Imp\u00f4ts Marseille',msg:'2 500 \u20ac avant le 25.',u:j>=24});
-  if(n>=2026*12+8 &&n<=2028*12+0 &&j>=20) al.push({t:'Jeanne Marie',          msg:'2 900 \u20ac avant le 25.',u:j>=24});
-  if(n>=2027*12+0 &&n<=2028*12+4 &&j<=2)  al.push({t:'BNP',                   msg:'2 000 \u20ac le 1er.',u:true});
-  if(n>=2026*12+10&&n<=2027*12+3 &&j<=10) al.push({t:'Imp\u00f4ts Cayenne',  msg:'2 000 \u20ac avant le 10.',u:j>=9});
+  if(n>=2026*12+4 &&n<=2026*12+9 &&j>=20) al.push({t:'Impôts Marseille',msg:'2 500 € avant le 25.',u:j>=24});
+  if(n>=2026*12+8 &&n<=2028*12+0 &&j>=20) al.push({t:'Jeanne Marie',          msg:'2 900 € avant le 25.',u:j>=24});
+  if(n>=2027*12+0 &&n<=2028*12+4 &&j<=2)  al.push({t:'BNP',                   msg:'2 000 € le 1er.',u:true});
+  if(n>=2026*12+10&&n<=2027*12+3 &&j<=10) al.push({t:'Impôts Cayenne',  msg:'2 000 € avant le 10.',u:j>=9});
   if(!al.length)return;
   var b=document.createElement('div');
   b.style.cssText='position:fixed;bottom:60px;right:16px;left:16px;max-width:380px;margin:0 auto;background:#161200;border:1px solid #C9A84C;border-radius:8px;padding:18px;z-index:200;';
   var h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">';
-  h+='<div style="color:#C9A84C;font-size:1em;letter-spacing:1px;">\u00c9ch\u00e9ances ce mois</div>';
-  h+='<button id="al-x" style="background:none;border:none;color:#666;cursor:pointer;font-size:1.3em;">\u2715</button></div>';
+  h+='<div style="color:#C9A84C;font-size:1em;letter-spacing:1px;">Échéances ce mois</div>';
+  h+='<button id="al-x" style="background:none;border:none;color:#666;cursor:pointer;font-size:1.3em;">✕</button></div>';
   al.forEach(function(a){
     h+='<div style="padding:9px 0;border-bottom:1px solid #1E1E1E;font-size:.88em;">';
-    h+='<div style="color:'+(a.u?'#C0392B':'#C9A84C')+';font-weight:600;margin-bottom:3px;">'+a.t+(a.u?' \u26a0\ufe0f':'')+'</div>';
+    h+='<div style="color:'+(a.u?'#C0392B':'#C9A84C')+';font-weight:600;margin-bottom:3px;">'+a.t+(a.u?' ⚠':'')+'</div>';
     h+='<div style="color:#888;">'+a.msg+'</div></div>';
   });
   h+='<button id="al-x2" style="margin-top:12px;width:100%;background:transparent;border:1px solid #2A2A2A;color:#777;padding:9px;border-radius:4px;cursor:pointer;font-size:.78em;text-transform:uppercase;letter-spacing:1px;">Fermer</button>';

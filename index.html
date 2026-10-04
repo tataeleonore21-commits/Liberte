@@ -654,7 +654,7 @@ function rRevI(){
 function getEch(annee,mois){
   var ev=[], n=annee*12+mois;
   if(n>=2026*12+4 &&n<=2026*12+9)  ev.push({nom:'Imp\u00f4ts Marseille',montant:2500,jour:25,id:'ms'+n,did:'marseille'});
-  if(n>=2026*12+8 &&n<=2028*12+0)  ev.push({nom:'Jeanne Marie',          montant:2900,jour:5, id:'jm'+n,did:'jm'});
+  if(n>=2026*12+8 &&n<=2028*12+0)  ev.push({nom:'Jeanne Marie',          montant:2900,jour:25,id:'jm'+n,did:'jm'});
   if(n>=2027*12+0 &&n<=2028*12+4)  ev.push({nom:'BNP',                   montant:2000,jour:1, id:'bp'+n,did:'bnp'});
   if(n>=2026*12+10&&n<=2027*12+3)  ev.push({nom:'Imp\u00f4ts Cayenne',  montant:2000,jour:10,id:'cy'+n,did:'cayenne'});
   if(annee===2027&&mois===4)        ev.push({nom:'Sofinco \u2014 Solde', montant:2000,jour:15,id:'sf'+n,did:'sofinco'});
@@ -849,7 +849,7 @@ function verifierAlertes(){
   var now=new Date(), j=now.getDate(), m2=now.getMonth(), a2=now.getFullYear(), n=a2*12+m2;
   var al=[];
   if(n>=2026*12+4 &&n<=2026*12+9 &&j>=20) al.push({t:'Imp\u00f4ts Marseille',msg:'2 500 \u20ac avant le 25.',u:j>=24});
-  if(n>=2026*12+8 &&n<=2028*12+0 &&j<=5)  al.push({t:'Jeanne Marie',          msg:'2 900 \u20ac avant le 5.',u:j>=4});
+  if(n>=2026*12+8 &&n<=2028*12+0 &&j>=20) al.push({t:'Jeanne Marie',          msg:'2 900 \u20ac avant le 25.',u:j>=24});
   if(n>=2027*12+0 &&n<=2028*12+4 &&j<=2)  al.push({t:'BNP',                   msg:'2 000 \u20ac le 1er.',u:true});
   if(n>=2026*12+10&&n<=2027*12+3 &&j<=10) al.push({t:'Imp\u00f4ts Cayenne',  msg:'2 000 \u20ac avant le 10.',u:j>=9});
   if(!al.length)return;

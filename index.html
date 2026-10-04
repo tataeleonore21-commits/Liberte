@@ -428,7 +428,7 @@ var DEFAUT = {
   dettes:[
     {id:'marseille', nom:'Trésor Public', init:15000, reste:15000, mensuel:2500, debut:'Mai 2026',       fin:'Octobre 2026',  phase:'Phase 1'},
     {id:'jm',        nom:'Ma Sauveuse',           init:40600, reste:37700, mensuel:2900, debut:'Septembre 2026', fin:'Janvier 2028',  phase:'Parallèle'},
-    {id:'bnp',       nom:'Ma Maison',                    init:34000, reste:34000, mensuel:2000, debut:'Janvier 2027',   fin:'Mai 2028',      phase:'Phase 2'},
+    {id:'bnp',       nom:'Ma Maison',                    init:33587, reste:33587, mensuel:2000, debut:'Janvier 2027',   fin:'Mai 2028',      phase:'Phase 2'},
     {id:'cayenne',   nom:'Trésor Public Cayenne',   init:12000, reste:12000, mensuel:2000, debut:'Novembre 2026',  fin:'Avril 2027',    phase:'Phase 2'},
     {id:'sofinco',   nom:'Sofinco',                init:2000,  reste:2000,  mensuel:null, debut:'Mai 2027',       fin:'Mai 2027',      phase:'Phase 3'},
     {id:'ce',        nom:"Caisse d'Épargne", init:5000,  reste:5000,  mensuel:2500, debut:'Juin 2027',      fin:'Juillet 2027',  phase:'Phase 3'}
@@ -711,12 +711,15 @@ function togglePay(id){
     var key=mk(cA,cM); if(!DM[key])DM[key]=[];
     if(!was){
       if(DM[key].findIndex(function(d){ return d._calId===id; })===-1)
-        DM[key].push({desc:evt.nom,mnt:evt.montant,cat:'Remboursement dette',date:evt.jour+'/'+(cM+1)+'/'+cA,_calId:id});
-      var dt=D.dettes.find(function(d){ return d.id===evt.did; });
-      if(dt) dt.reste=Math.max(0,(dt.reste||0)-evt.montant);
-      // Synchroniser Mon Mois sur le même mois
-      vA=cA; vM=cM;
-      toast('✓ '+evt.montant.toLocaleString('fr-FR')+' € déduits de la dette et du solde');
+        var montantPaye = evt.montant;
+        var rep = prompt('Montant payé pour ' + evt.nom + ' (€) :', evt.montant);
+        if(rep !== null && parseFloat(rep) > 0) montantPaye = parseFloat(rep);
+        var extra = montantPaye > evt.montant ? ' (+' + (montantPaye - evt.montant).toLocaleString('fr-FR') + ' €)' : '';
+        DM[key].push({desc:evt.nom+extra, mnt:montantPaye, cat:'Remboursement dette', date:evt.jour+'/'+(cM+1)+'/'+cA, _calId:id});
+        var dt=D.dettes.find(function(d){ return d.id===evt.did; });
+        if(dt) dt.reste=Math.max(0,(dt.reste||0)-montantPaye);
+        vA=cA; vM=cM;
+        toast('✓ '+montantPaye.toLocaleString('fr-FR')+' € déduits');
     } else {
       var idx2=DM[key].findIndex(function(d){ return d._calId===id; });
       if(idx2!==-1){ DM[key].splice(idx2,1); if(!DM[key].length) delete DM[key]; }
@@ -885,7 +888,7 @@ function updateAll(){
   var totD=deps.reduce(function(s,d){ return s+(d.revenu?0:d.mnt); },0);
   var revM=deps.filter(function(d){ return d.revenu; }).reduce(function(s,d){ return s+Math.abs(d.mnt); },0);
   var sol=rev+revM-totD;
-  var pc2=pct(tot,108600);
+  var pc2=pct(tot,108187);
 
   var e;
   e=el('d-pct');  if(e) e.textContent=pc2+'%';
